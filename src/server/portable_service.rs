@@ -1185,6 +1185,10 @@ pub mod client {
         *QUICK_SUPPORT.lock().unwrap() = v;
     }
 
+    pub fn is_quick_support() -> bool {
+        *QUICK_SUPPORT.lock().unwrap()
+    }
+
     pub struct CapturerPortable {
         width: usize,
         height: usize,

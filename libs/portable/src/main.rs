@@ -234,9 +234,21 @@ fn execute(path: PathBuf, args: Vec<String>, _ui: bool) {
     // setup env
     let exe = std::env::current_exe().unwrap_or_default();
     let exe_name = exe.file_name().unwrap_or_default();
+    let mut args = args;
+    #[cfg(windows)]
+    let is_qs = win::is_quick_support_exe(&exe_name.to_string_lossy());
+    #[cfg(not(windows))]
+    let is_qs = false;
+    if is_qs && !args.iter().any(|a| a == "--quick_support" || a == "--qs") {
+        args.push("--quick_support".to_string());
+    }
     // run executable
     let mut cmd = Command::new(path);
     cmd.args(args);
+    cmd.env("APPNAME_RUNTIME", &exe_name);
+    if is_qs {
+        cmd.env("RUSTDESK_QS", "1");
+    }
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -373,9 +385,9 @@ mod win {
     /// Check if the executable is a Quick Support version.
     /// Note: This function must be kept in sync with `src/core_main.rs`.
     #[inline]
-    pub(super) fn is_quick_support_exe(exe: &str) -> bool {
+    pub(super) pub(super) fn is_quick_support_exe(exe: &str) -> bool {
         let exe = exe.to_lowercase();
-        exe.contains("-qs-") || exe.contains("-qs.exe") || exe.contains("_qs.exe")
+        exe.contains("-qs") || exe.contains("_qs") || exe.contains("cliente") || exe.contains("client")
     }
 }
 

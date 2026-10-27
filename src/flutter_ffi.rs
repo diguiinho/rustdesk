@@ -2533,7 +2533,11 @@ pub fn main_support_remove_wallpaper() -> bool {
 }
 
 pub fn is_incoming_only() -> SyncReturn<bool> {
-    SyncReturn(config::is_incoming_only())
+    #[cfg(windows)]
+    let qs = crate::portable_service::client::is_quick_support();
+    #[cfg(not(windows))]
+    let qs = false;
+    SyncReturn(config::is_incoming_only() || qs)
 }
 
 pub fn is_outgoing_only() -> SyncReturn<bool> {
