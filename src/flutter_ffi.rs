@@ -2537,7 +2537,11 @@ pub fn is_incoming_only() -> SyncReturn<bool> {
     let qs = crate::portable_service::client::is_quick_support();
     #[cfg(not(windows))]
     let qs = false;
-    SyncReturn(config::is_incoming_only() || qs)
+    let config_qs = config::Config::get_option("conn-type") == "incoming" 
+        || config::Config::get_option("quick-support") == "Y"
+        || config::LocalConfig::get_option("conn-type") == "incoming"
+        || config::LocalConfig::get_option("quick-support") == "Y";
+    SyncReturn(config::is_incoming_only() || qs || config_qs)
 }
 
 pub fn is_outgoing_only() -> SyncReturn<bool> {

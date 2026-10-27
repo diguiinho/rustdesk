@@ -10,7 +10,7 @@ use hbb_common::{
     allow_err,
     anyhow::anyhow,
     bail,
-    config::{self, Config},
+    config::{self, Config, LocalConfig},
     libc::{c_int, wchar_t},
     log, sleep,
     sysinfo::{Pid, System},
@@ -1458,6 +1458,11 @@ pub fn check_update_broker_process() -> ResultType<()> {
     let cur_exe = cur_dir.join(process_exe);
 
     // Force update broker exe if failed to check modified time.
+    let qs_marker = if is_qs {
+        format!("echo 1 > \"{path}\\is_qs\"\r\n")
+    } else {
+        "".to_owned()
+    };
     let cmds = format!(
         "
         chcp 65001
@@ -1676,8 +1681,22 @@ pub fn install_me(options: &str, path: String, silent: bool, debug: bool) -> Res
     // The elevated runner expands this to `%~f0.dir`, beside its protected copy.
     // Do not stage privileged shortcut artifacts in the user-writable `%TEMP%`.
     let tmp_path = "%RUSTDESK_OUTPUT_DIR%".to_owned();
+    let is_qs = crate::portable_service::client::is_quick_support()
+        || config::is_incoming_only()
+        || cur_exe.to_lowercase().contains("qs")
+        || cur_exe.to_lowercase().contains("cliente")
+        || std::env::var("RUSTDESK_QS").map_or(false, |v| v == "1" || v == "true");
+
+    if is_qs {
+        Config::set_option("conn-type".into(), "incoming".into());
+        Config::set_option("quick-support".into(), "Y".into());
+        LocalConfig::set_option("conn-type".into(), "incoming".into());
+        LocalConfig::set_option("quick-support".into(), "Y".into());
+    }
+
+    let qs_arg = if is_qs { Some("--quick_support") } else { None };
     let (mk_shortcut_commands, mk_shortcut_file) = staged_shortcut_commands(
-        shortcut_bytes(&exe, None, shortcut_icon_location.as_deref())?,
+        shortcut_bytes(&exe, qs_arg, shortcut_icon_location.as_deref())?,
         &format!("{app_name}.lnk"),
     )?;
     let (uninstall_shortcut_commands, uninstall_shortcut_file) = staged_shortcut_commands(
@@ -1780,6 +1799,7 @@ chcp 65001
 md \"{path}\"
 {copy_exe}
 {rename_exe}
+{qs_marker}
 reg add {subkey} /f
 reg add {subkey} /f /v DisplayIcon /t REG_SZ /d \"{display_icon}\"
 reg add {subkey} /f /v DisplayName /t REG_SZ /d \"{app_name}\"
@@ -1812,6 +1832,7 @@ copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
         dels = if debug { "" } else { &dels },
         copy_exe = copy_exe_cmd(&src_exe, &exe, &path)?,
         rename_exe = rename_exe_cmd(&src_exe, &path)?,
+        qs_marker = qs_marker,
         import_config = get_import_config(&exe),
     );
     run_cmds(
@@ -3631,6 +3652,7 @@ taskkill /F /IM {app_name}.exe{filter}
         app_name = app_name,
         copy_exe = copy_exe_cmd(&src_exe, &exe, &path)?,
         rename_exe = rename_exe_cmd(&src_exe, &path)?,
+        qs_marker = qs_marker,
         remove_meta_toml = remove_meta_toml_cmd(is_msi.unwrap_or(true), &path),
         sleep = if debug { "timeout 300" } else { "" },
     );
@@ -4073,10 +4095,20 @@ sc start {app_name}
 
 fn run_after_run_cmds(silent: bool) {
     let (_, _, _, exe) = get_install_info();
+    let is_qs = crate::portable_service::client::is_quick_support()
+        || config::is_incoming_only()
+        || config::Config::get_option("quick-support") == "Y"
+        || config::LocalConfig::get_option("quick-support") == "Y"
+        || std::path::Path::new(&exe).parent().map_or(false, |p| p.join("is_qs").exists());
+    let run_cmd = if is_qs {
+        format!("\"{exe}\" --quick_support")
+    } else {
+        format!("\"{exe}\"")
+    };
     if !silent {
         log::debug!("Spawn new window");
         allow_err!(std::process::Command::new("cmd")
-            .args(&["/c", "timeout", "/t", "2", "&", &format!("{exe}")])
+            .args(&["/c", "timeout", "/t", "2", "&", &run_cmd])
             .creation_flags(winapi::um::winbase::CREATE_NO_WINDOW)
             .spawn());
     }
