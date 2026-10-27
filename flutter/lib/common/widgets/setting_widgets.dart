@@ -257,7 +257,15 @@ String getOtherDefaultSettingOption(String key) {
   if (key == kOptionAllowTerminalClipboardWrite) {
     return bind.mainGetLocalOption(key: key);
   }
-  return bind.mainGetUserDefaultOption(key: key);
+  final res = bind.mainGetUserDefaultOption(key: key);
+  if (res.isEmpty &&
+      (key == kOptionEnableFileCopyPaste ||
+          key == kOptionShowRemoteCursor ||
+          key == kOptionFollowRemoteCursor ||
+          key == kOptionDisableAudio)) {
+    return 'Y';
+  }
+  return res;
 }
 
 Future<void> setOtherDefaultSettingOption(String key, String value) {

@@ -2223,7 +2223,14 @@ class _DisplayState extends State<_Display> {
     onChanged(bool b) async {
       await setOtherDefaultSettingOption(
         key,
-        b ? 'Y' : (key == kOptionEnableFileCopyPaste ? 'N' : defaultOptionNo),
+        b
+            ? 'Y'
+            : (key == kOptionEnableFileCopyPaste ||
+                    key == kOptionShowRemoteCursor ||
+                    key == kOptionFollowRemoteCursor ||
+                    key == kOptionDisableAudio
+                ? 'N'
+                : defaultOptionNo),
       );
       setState(() {});
     }

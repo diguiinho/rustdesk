@@ -1337,7 +1337,14 @@ class __DisplayPageState extends State<_DisplayPage> {
           : (b) async {
               await setOtherDefaultSettingOption(
                 key,
-                b ? 'Y' : defaultOptionNo,
+                b
+                    ? 'Y'
+                    : (key == kOptionEnableFileCopyPaste ||
+                            key == kOptionShowRemoteCursor ||
+                            key == kOptionFollowRemoteCursor ||
+                            key == kOptionDisableAudio
+                        ? 'N'
+                        : defaultOptionNo),
               );
               setState(() {});
             },
