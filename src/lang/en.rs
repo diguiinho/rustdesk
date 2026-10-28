@@ -2,7 +2,7 @@ lazy_static::lazy_static! {
 pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
         ("desk_tip", "Your desktop can be accessed with this ID and password."),
-        ("connecting_status", "Connecting to the RustDesk network..."),
+        ("connecting_status", "Connecting to the DSuporte network..."),
         ("not_ready_status", "Not ready. Please check your connection"),
         ("ID/Relay Server", "ID/Relay server"),
         ("id_change_tip", "Only a-z, A-Z, 0-9, - (dash) and _ (underscore) characters allowed. The first letter must be a-z, A-Z. Length between 6 and 16."),
@@ -81,8 +81,8 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Input Control", "Input control"),
         ("Audio Capture", "Audio capture"),
         ("Open System Setting", "Open system setting"),
-        ("android_input_permission_tip1", "In order for a remote device to control your Android device via mouse or touch, you need to allow RustDesk to use the \"Accessibility\" service."),
-        ("android_input_permission_tip2", "Please go to the next system settings page, find and enter [Installed Services], turn on [RustDesk Input] service."),
+        ("android_input_permission_tip1", "In order for a remote device to control your Android device via mouse or touch, you need to allow DSuporte to use the \"Accessibility\" service."),
+        ("android_input_permission_tip2", "Please go to the next system settings page, find and enter [Installed Services], turn on [DSuporte Input] service."),
         ("android_new_connection_tip", "New control request has been received, which wants to control your current device."),
         ("android_service_will_start_tip", "Turning on \"Screen capture\" will automatically start the service, allowing other devices to request a connection to your device."),
         ("android_stop_service_tip", "Closing the service will automatically close all established connections."),
@@ -214,7 +214,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("confirm_clear_Wayland_screen_selection_tip", "Are you sure you want to clear the Wayland screen selection?"),
         ("android_new_voice_call_tip", "A new voice call request was received. If you accept, the audio will switch to voice communication."),
         ("texture_render_tip", "Use texture rendering to make the pictures smoother. You could try disabling this option if you encounter rendering issues."),
-        ("floating_window_tip", "It helps to keep RustDesk background service"),
+        ("floating_window_tip", "It helps to keep DSuporte background service"),
         ("enable-bot-tip", "If you enable this feature, you can receive the 2FA code from your bot. It can also function as a connection notification."),
         ("enable-bot-desc", "1. Open a chat with @BotFather.\n2. Send the command \"/newbot\". You will receive a token after completing this step.\n3. Start a chat with your newly created bot. Send a message beginning with a forward slash (\"/\") like \"/hello\" to activate it.\n"),
         ("cancel-2fa-confirm-tip", "Are you sure you want to cancel 2FA?"),
