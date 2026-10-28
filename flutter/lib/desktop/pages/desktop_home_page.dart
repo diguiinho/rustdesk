@@ -122,7 +122,28 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               });
             }
           },
-        ).marginOnly(bottom: 6, right: 6)
+        ).marginOnly(bottom: 6, right: 6),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            onPressed: () {
+              SystemNavigator.pop();
+              if (isWindows) {
+                exit(0);
+              }
+            },
+            icon: const Icon(Icons.power_settings_new, size: 16),
+            label: Text(
+              translate('Quit'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ).marginOnly(bottom: 10, right: 10),
       ]);
     }
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
@@ -560,15 +581,23 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (bind.isIncomingOnly()) {
       return Align(
         alignment: Alignment.centerRight,
-        child: OutlinedButton(
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
           onPressed: () {
             SystemNavigator.pop(); // Close the application
-            // https://github.com/flutter/flutter/issues/66631
             if (isWindows) {
               exit(0);
             }
           },
-          child: Text(translate('Quit')),
+          icon: const Icon(Icons.power_settings_new, size: 16),
+          label: Text(
+            translate('Quit'),
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ).marginAll(14);
     }

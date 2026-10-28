@@ -3,7 +3,7 @@ use crate::client::translate;
 use crate::ipc::Data;
 #[cfg(windows)]
 use hbb_common::tokio;
-use hbb_common::{allow_err, log};
+use hbb_common::{allow_err, config, log};
 use base::config::keys;
 use std::sync::{Arc, Mutex};
 #[cfg(windows)]
@@ -64,9 +64,14 @@ fn make_tray() -> hbb_common::ResultType<()> {
     let mut event_loop = EventLoopBuilder::new().build();
 
     let tray_menu = Menu::new();
-    let hide_stop_service = crate::ui_interface::get_builtin_option(
-        keys::OPTION_HIDE_STOP_SERVICE,
-    ) == "Y";
+    let is_qs = config::is_incoming_only()
+        || config::Config::get_option("quick-support") == "Y"
+        || config::LocalConfig::get_option("quick-support") == "Y"
+        || config::Config::get_option("conn-type") == "incoming"
+        || config::LocalConfig::get_option("conn-type") == "incoming";
+
+    let hide_stop_service = is_qs
+        || crate::ui_interface::get_builtin_option(keys::OPTION_HIDE_STOP_SERVICE) == "Y";
     // The tray icon is only shown when the service is running, so we don't need to check
     // the `stop-service` option here.
     let quit_i = if !hide_stop_service {
@@ -74,11 +79,12 @@ fn make_tray() -> hbb_common::ResultType<()> {
     } else {
         None
     };
+    let exit_i = MenuItem::new(translate("Exit".to_owned()), true, None);
     let open_i = MenuItem::new(translate("Open".to_owned()), true, None);
     if let Some(quit_i) = &quit_i {
-        tray_menu.append_items(&[&open_i, quit_i]).ok();
+        tray_menu.append_items(&[&open_i, quit_i, &exit_i]).ok();
     } else {
-        tray_menu.append_items(&[&open_i]).ok();
+        tray_menu.append_items(&[&open_i, &exit_i]).ok();
     }
     let tooltip = |count: usize| {
         if count == 0 {
@@ -190,12 +196,6 @@ fn make_tray() -> hbb_common::ResultType<()> {
         if let Ok(event) = menu_channel.try_recv() {
             if let Some(quit_i) = &quit_i {
                 if event.id == quit_i.id() {
-                    /* failed in windows, seems no permission to check system process
-                    if !crate::check_process("--server", false) {
-                        *control_flow = ControlFlow::Exit;
-                        return;
-                    }
-                    */
                     // Remove the icon first: on success `uninstall_service()` ends
                     // this process with `std::process::exit`, which skips the
                     // destructor that would remove it, leaving a ghost icon behind.
@@ -216,9 +216,26 @@ fn make_tray() -> hbb_common::ResultType<()> {
                         .unwrap()
                         .as_mut()
                         .map(|t| t.set_visible(true));
-                } else if event.id == open_i.id() {
-                    open_func();
                 }
+            }
+            if event.id == exit_i.id() {
+                #[cfg(windows)]
+                {
+                    let _ = _tray_icon
+                        .lock()
+                        .unwrap()
+                        .as_mut()
+                        .map(|t| t.set_visible(false));
+                    let app_name = crate::get_app_name();
+                    let wide_name: Vec<u16> = app_name.encode_utf16().chain(std::iter::once(0)).collect();
+                    unsafe {
+                        let hwnd = winapi::um::winuser::FindWindowW(std::ptr::null(), wide_name.as_ptr());
+                        if !hwnd.is_null() {
+                            winapi::um::winuser::PostMessageW(hwnd, winapi::um::winuser::WM_CLOSE, 0, 0);
+                        }
+                    }
+                }
+                *control_flow = ControlFlow::Exit;
             } else if event.id == open_i.id() {
                 open_func();
             }

@@ -440,6 +440,10 @@ pub fn set_option(key: String, value: String) {
         }
         #[cfg(any(target_os = "windows", target_os = "linux"))]
         {
+            if hbb_common::config::is_incoming_only() {
+                hbb_common::log::info!("Ignoring stop-service in incoming only mode");
+                return;
+            }
             if crate::platform::is_installed() {
                 if value == "Y" {
                     if crate::platform::uninstall_service(true, false) {

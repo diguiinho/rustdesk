@@ -67,7 +67,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
   Widget build(BuildContext context) {
     final isIncomingOnly = bind.isIncomingOnly();
     startServiceWidget() => Offstage(
-          offstage: !_svcStopped.value,
+          offstage: !_svcStopped.value || isIncomingOnly,
           child: InkWell(
                   onTap: () async {
                     await start_service(true);
