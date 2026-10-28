@@ -720,12 +720,10 @@ jobs:
           # Configure custom release keystore for DSuporte
           if [ ! -f ./flutter/android/app/dsuporte.keystore ]; then
             keytool -genkey -v -keystore ./flutter/android/app/dsuporte.keystore -alias dsuporte -keyalg RSA -keysize 2048 -validity 10000 -storepass dsuporte1408 -keypass dsuporte1408 -dname "CN=DSuporte, OU=DFlix, O=DAutomacoes, L=SaoPaulo, ST=SP, C=BR"
-            cat << 'EOF' > ./flutter/android/key.properties
-storePassword=dsuporte1408
-keyPassword=dsuporte1408
-keyAlias=dsuporte
-storeFile=dsuporte.keystore
-EOF
+            echo "storePassword=dsuporte1408" > ./flutter/android/key.properties
+            echo "keyPassword=dsuporte1408" >> ./flutter/android/key.properties
+            echo "keyAlias=dsuporte" >> ./flutter/android/key.properties
+            echo "storeFile=dsuporte.keystore" >> ./flutter/android/key.properties
           fi
           case ${{ matrix.job.target }} in
             aarch64-linux-android)
@@ -936,12 +934,10 @@ EOF
           # Configure custom release keystore for DSuporte
           if [ ! -f ./flutter/android/app/dsuporte.keystore ]; then
             keytool -genkey -v -keystore ./flutter/android/app/dsuporte.keystore -alias dsuporte -keyalg RSA -keysize 2048 -validity 10000 -storepass dsuporte1408 -keypass dsuporte1408 -dname "CN=DSuporte, OU=DFlix, O=DAutomacoes, L=SaoPaulo, ST=SP, C=BR"
-            cat << 'EOF' > ./flutter/android/key.properties
-storePassword=dsuporte1408
-keyPassword=dsuporte1408
-keyAlias=dsuporte
-storeFile=dsuporte.keystore
-EOF
+            echo "storePassword=dsuporte1408" > ./flutter/android/key.properties
+            echo "keyPassword=dsuporte1408" >> ./flutter/android/key.properties
+            echo "keyAlias=dsuporte" >> ./flutter/android/key.properties
+            echo "storeFile=dsuporte.keystore" >> ./flutter/android/key.properties
           fi
           mv ./flutter/android/app/src/main/jniLibs/arm64-v8a/liblibrustdesk.so ./flutter/android/app/src/main/jniLibs/arm64-v8a/librustdesk.so
           cp ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so ./flutter/android/app/src/main/jniLibs/arm64-v8a/
