@@ -113,44 +113,86 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     ];
     if (isIncomingOnly) {
       children.addAll([
-        Divider(),
-        OnlineStatusWidget(
-          onSvcStatusChanged: () {
-            if (isInHomePage()) {
-              Future.delayed(Duration(milliseconds: 300), () {
-                _updateWindowSize();
-              });
-            }
-          },
-        ).marginOnly(bottom: 6, right: 6),
-        Align(
-          alignment: Alignment.centerRight,
+        const SizedBox(height: 8),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          width: double.infinity,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              elevation: 2,
             ),
             onPressed: () {
-              SystemNavigator.pop();
-              if (isWindows) {
-                exit(0);
-              }
+              final id = gFFI.serverModel.serverId.text;
+              final pwd = gFFI.serverModel.serverPasswd.text;
+              final data = "DSuporte\nID: $id\nSenha: $pwd";
+              Clipboard.setData(ClipboardData(text: data));
+              showToast("ID e Senha copiados!");
             },
-            icon: const Icon(Icons.power_settings_new, size: 16),
-            label: Text(
-              translate('Quit'),
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            icon: const Icon(Icons.content_copy_rounded, size: 16),
+            label: const Text(
+              "Copiar ID e Senha",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
-        ).marginOnly(bottom: 10, right: 10),
+        ),
+        const SizedBox(height: 12),
+        const Divider(height: 1),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: OnlineStatusWidget(
+                  onSvcStatusChanged: () {
+                    if (isInHomePage()) {
+                      Future.delayed(const Duration(milliseconds: 300), () {
+                        _updateWindowSize();
+                      });
+                    }
+                  },
+                ),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  SystemNavigator.pop();
+                  if (isWindows) {
+                    exit(0);
+                  }
+                },
+                icon: const Icon(Icons.power_settings_new, size: 15),
+                label: Text(
+                  translate('Quit'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
       ]);
     }
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
+        width: isIncomingOnly ? 360.0 : 200.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -208,6 +250,106 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   buildIDBoard(BuildContext context) {
     final model = gFFI.serverModel;
+    final isIncomingOnly = bind.isIncomingOnly();
+    final textColor = Theme.of(context).textTheme.titleLarge?.color;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    if (isIncomingOnly) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.fingerprint_rounded, size: 15, color: primaryColor),
+                    const SizedBox(width: 5),
+                    Text(
+                      translate("ID").toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: textColor?.withOpacity(0.55),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: model.serverId.text));
+                        showToast(translate("Copied"));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.copy_rounded, size: 12, color: primaryColor),
+                            const SizedBox(width: 3),
+                            Text(
+                              "Copiar",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    buildPopupMenu(context),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            GestureDetector(
+              onDoubleTap: () {
+                Clipboard.setData(ClipboardData(text: model.serverId.text));
+                showToast(translate("Copied"));
+              },
+              child: TextFormField(
+                controller: model.serverId,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: primaryColor,
+                ),
+              ).workaroundFreezeLinuxMint(),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.only(left: 20, right: 11),
       height: 57,
@@ -313,8 +455,121 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     RxBool refreshHover = false.obs;
     RxBool editHover = false.obs;
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final isIncomingOnly = bind.isIncomingOnly();
     final showOneTime = model.approveMode != 'click' &&
         model.verificationMethod != kUsePermanentPassword;
+
+    if (isIncomingOnly) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.lock_outline_rounded, size: 15, color: primaryColor),
+                    const SizedBox(width: 5),
+                    Text(
+                      "SENHA",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: textColor?.withOpacity(0.55),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    if (showOneTime)
+                      AnimatedRotationWidget(
+                        onPressed: () => bind.mainUpdateTemporaryPassword(),
+                        child: Tooltip(
+                          message: translate('Refresh Password'),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(Icons.refresh_rounded, size: 15, color: textColor?.withOpacity(0.6)),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(4),
+                      onTap: () {
+                        if (showOneTime) {
+                          Clipboard.setData(ClipboardData(text: model.serverPasswd.text));
+                          showToast(translate("Copied"));
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.copy_rounded, size: 12, color: primaryColor),
+                            const SizedBox(width: 3),
+                            Text(
+                              "Copiar",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            GestureDetector(
+              onDoubleTap: () {
+                if (showOneTime) {
+                  Clipboard.setData(ClipboardData(text: model.serverPasswd.text));
+                  showToast(translate("Copied"));
+                }
+              },
+              child: TextFormField(
+                controller: model.serverPasswd,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
+                  color: textColor,
+                ),
+              ).workaroundFreezeLinuxMint(),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       margin: EdgeInsets.only(left: 20.0, right: 16, top: 13, bottom: 13),
       child: Row(
@@ -409,6 +664,34 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   buildTip(BuildContext context) {
     final isOutgoingOnly = bind.isOutgoingOnly();
+    final isIncomingOnly = bind.isIncomingOnly();
+    if (isIncomingOnly) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.headset_mic_rounded, size: 18, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                translate("desk_tip"),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.85),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding:
           const EdgeInsets.only(left: 20.0, right: 16, top: 16.0, bottom: 5),
@@ -579,27 +862,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       }
     }
     if (bind.isIncomingOnly()) {
-      return Align(
-        alignment: Alignment.centerRight,
-        child: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-          onPressed: () {
-            SystemNavigator.pop(); // Close the application
-            if (isWindows) {
-              exit(0);
-            }
-          },
-          icon: const Icon(Icons.power_settings_new, size: 16),
-          label: Text(
-            translate('Quit'),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ).marginAll(14);
+      return const SizedBox();
     }
     return Container();
   }
@@ -892,7 +1155,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (renderObject is RenderBox) {
       final size = renderObject.size;
       if (size != imcomingOnlyHomeSize) {
-        imcomingOnlyHomeSize = size;
+        imcomingOnlyHomeSize = Size(360, size.height);
         windowManager.setSize(getIncomingOnlyHomeSize());
       }
     }
