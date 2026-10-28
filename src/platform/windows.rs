@@ -1458,11 +1458,6 @@ pub fn check_update_broker_process() -> ResultType<()> {
     let cur_exe = cur_dir.join(process_exe);
 
     // Force update broker exe if failed to check modified time.
-    let qs_marker = if is_qs {
-        format!("echo 1 > \"{path}\\is_qs\"\r\n")
-    } else {
-        "".to_owned()
-    };
     let cmds = format!(
         "
         chcp 65001
@@ -1792,6 +1787,11 @@ copy /Y \"{tmp_path}\\{app_name} Tray.lnk\" \"%PROGRAMDATA%\\Microsoft\\Windows\
     // Remember to check if `update_me` need to be changed if changing the `cmds`.
     // No need to merge the existing dup code, because the code in these two functions are too critical.
     // New code should be written in a common function.
+    let qs_marker = if is_qs {
+        format!("echo 1 > \"{path}\\is_qs\"\r\n")
+    } else {
+        "".to_owned()
+    };
     let cmds = format!(
         "
 {uninstall_str}
@@ -1832,6 +1832,7 @@ copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
         dels = if debug { "" } else { &dels },
         copy_exe = copy_exe_cmd(&src_exe, &exe, &path)?,
         rename_exe = rename_exe_cmd(&src_exe, &path)?,
+
         qs_marker = qs_marker,
         import_config = get_import_config(&exe),
     );
@@ -3652,7 +3653,6 @@ taskkill /F /IM {app_name}.exe{filter}
         app_name = app_name,
         copy_exe = copy_exe_cmd(&src_exe, &exe, &path)?,
         rename_exe = rename_exe_cmd(&src_exe, &path)?,
-        qs_marker = qs_marker,
         remove_meta_toml = remove_meta_toml_cmd(is_msi.unwrap_or(true), &path),
         sleep = if debug { "timeout 300" } else { "" },
     );
