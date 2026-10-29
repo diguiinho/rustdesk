@@ -1792,29 +1792,8 @@ copy /Y \"{tmp_path}\\{app_name} Tray.lnk\" \"%PROGRAMDATA%\\Microsoft\\Windows\
     } else {
         "".to_owned()
     };
-    let clean_legacy = "
-net stop RustDesk >nul 2>&1
-sc delete RustDesk >nul 2>&1
-net stop BMDesk >nul 2>&1
-sc delete BMDesk >nul 2>&1
-taskkill /F /IM rustdesk.exe >nul 2>&1
-taskkill /F /IM bmdesk.exe >nul 2>&1
-taskkill /F /IM dsuporte.exe >nul 2>&1
-reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\RustDesk\" /f >nul 2>&1
-reg delete \"HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\BMDesk\" /f >nul 2>&1
-del /f /q \"%PUBLIC%\\Desktop\\RustDesk.lnk\" >nul 2>&1
-del /f /q \"%PUBLIC%\\Desktop\\BMDesk.lnk\" >nul 2>&1
-del /f /q \"%PUBLIC%\\Desktop\\Credenciais RustDesk*.lnk\" >nul 2>&1
-del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\RustDesk Tray.lnk\" >nul 2>&1
-del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\BMDesk Tray.lnk\" >nul 2>&1
-rd /s /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\RustDesk\" >nul 2>&1
-rd /s /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\BMDesk\" >nul 2>&1
-rd /s /q \"C:\\Program Files\\RustDesk\" >nul 2>&1
-rd /s /q \"C:\\Program Files\\BMDesk\" >nul 2>&1
-";
     let cmds = format!(
         "
-{clean_legacy}
 {uninstall_str}
 chcp 65001
 md \"{path}\"
