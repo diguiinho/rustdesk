@@ -2971,10 +2971,18 @@ class ServerConfig {
 
   /// from local options
   ServerConfig.fromOptions(Map<String, dynamic> options)
-      : idServer = options['custom-rendezvous-server'] ?? "",
-        relayServer = options['relay-server'] ?? "",
-        apiServer = options['api-server'] ?? "",
-        key = options['key'] ?? "";
+      : idServer = (options['custom-rendezvous-server'] as String?)?.isNotEmpty == true
+            ? options['custom-rendezvous-server']
+            : "dsuporte.diguiinhoflix.com.br",
+        relayServer = (options['relay-server'] as String?)?.isNotEmpty == true
+            ? options['relay-server']
+            : "dsuporte.diguiinhoflix.com.br",
+        apiServer = (options['api-server'] as String?)?.isNotEmpty == true
+            ? options['api-server']
+            : "http://dsuporte.diguiinhoflix.com.br:21114",
+        key = (options['key'] as String?)?.isNotEmpty == true
+            ? options['key']
+            : "XH2AbkH0IaoihFU9FHdLcHSGPhn2zjNi2wlNIP5b5pU=";
 }
 
 Widget dialogButton(String text,
